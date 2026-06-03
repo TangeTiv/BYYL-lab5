@@ -1,0 +1,12 @@
+read x;
+read y;
+z := x + y * 2;
+write z;
+if z < 10 then
+  write 0
+else
+  write 1
+end;
+repeat
+  x := x - 1
+until x = 0

@@ -1,0 +1,8 @@
+read a;
+b := a + 1;
+write b;
+if b > 5 then
+  write 999
+else
+  write 0
+end
