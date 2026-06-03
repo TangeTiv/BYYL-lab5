@@ -338,15 +338,48 @@ TreeNode* assign_stmt(void)
     if (token == ID)
     temp = copyString(tokenString);    // 保存变量名
     match(ID);
-    if(token == ASSIGN)
+
+    /* x := exp   → AssignK, child[0]=exp */
+    if (token == ASSIGN)
     {
         t = newStmtNode(AssignK);
-        if(t != NULL)
-        {
-            t->attr.name = temp;
-        }
+        if (t != NULL) t->attr.name = temp;
         match(ASSIGN);
-        if (t!=NULL) t->child[0] = exp();
+        if (t != NULL) t->child[0] = exp();
+    }
+    /* x += exp  → 展开为  x := x + exp */
+    else if (token == PLUSASSIGN)
+    {
+        t = newStmtNode(AssignK);
+        if (t != NULL) t->attr.name = temp;
+        match(PLUSASSIGN);
+
+        /* 构建 x + exp 子树 */
+        TreeNode* lhs = newExpNode(IdK);
+        if (lhs != NULL) lhs->attr.name = copyString(temp);
+        TreeNode* op = newExpNode(OpK);
+        if (op != NULL) op->attr.op = PLUS;
+        if (op != NULL) op->child[0] = lhs;
+        TreeNode* rhs = exp();
+        if (op != NULL) op->child[1] = rhs;
+        if (t != NULL) t->child[0] = op;
+    }
+    /* x -= exp  → 展开为  x := x - exp */
+    else if (token == MINUSASSIGN)
+    {
+        t = newStmtNode(AssignK);
+        if (t != NULL) t->attr.name = temp;
+        match(MINUSASSIGN);
+
+        /* 构建 x - exp 子树 */
+        TreeNode* lhs = newExpNode(IdK);
+        if (lhs != NULL) lhs->attr.name = copyString(temp);
+        TreeNode* op = newExpNode(OpK);
+        if (op != NULL) op->attr.op = MINUS;
+        if (op != NULL) op->child[0] = lhs;
+        TreeNode* rhs = exp();
+        if (op != NULL) op->child[1] = rhs;
+        if (t != NULL) t->child[0] = op;
     }
     else
     {

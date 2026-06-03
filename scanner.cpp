@@ -210,8 +210,8 @@ static TokenType reservedLookup(const char* s)
  *
  *   INLT ——> DONE   （读入 '=' → "<="，读入 '>' → "<>"，其他 → "<"）
  *   INGT ——> DONE   （读入 '=' → ">="，其他 → ">"）
- *   INPLUS ——> DONE （读入 '+' → "++"，其他 → "+"）
- *   INMINUS ——> DONE（读入 '-' → "--"，其他 → "-"）
+ *   INPLUS ——> DONE （读入 '+' → "++"，读入 '=' → "+="，其他 → "+"）
+ *   INMINUS ——> DONE（读入 '-' → "--"，读入 '=' → "-="，其他 → "-"）
  *
  *   INNUM ——> DONE  （遇到非数字字符）
  *   INID  ——> DONE  （遇到非字母字符）
@@ -340,29 +340,33 @@ TokenType getToken(void)
                 }
                 break;
 
-            /* ---- 自增运算符 "++" 识别状态 ---- */
+            /* ---- 自增/加法赋值运算符识别状态 ---- */
             case INPLUS:
                 state = DONE;
                 if (c == '+')
-                    currentToken = INC;   // 识别为 "++"
+                    currentToken = INC;        // 识别为 "++"
+                else if (c == '=')
+                    currentToken = PLUSASSIGN; // 识别为 "+="
                 else
                 {
-                    ungetNextChar();      // 不是 '+'，回退
+                    ungetNextChar();      // 回退
                     save = FALSE;
                     currentToken = PLUS;  // 识别为单独的 "+"
                 }
                 break;
 
-            /* ---- 自减运算符 "--" 识别状态 ---- */
+            /* ---- 自减/减法赋值运算符识别状态 ---- */
             case INMINUS:
                 state = DONE;
                 if (c == '-')
-                    currentToken = DEC;   // 识别为 "--"
+                    currentToken = DEC;          // 识别为 "--"
+                else if (c == '=')
+                    currentToken = MINUSASSIGN;  // 识别为 "-="
                 else
                 {
-                    ungetNextChar();      // 不是 '-'，回退
+                    ungetNextChar();      // 回退
                     save = FALSE;
-                    currentToken = MINUS;   // 单独的 '-' 
+                    currentToken = MINUS; // 单独的 '-'
                 }
                 break;
 

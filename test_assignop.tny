@@ -1,0 +1,22 @@
+{ test_assignop.tny — 复合赋值运算符测试
+  测试 += 和 -= 运算符 }
+
+read x;
+read y;
+
+{ += 等价于 x := x + y }
+x += y;
+write x;
+
+{ -= 等价于 x := x - y }
+x -= y;
+write x;
+
+{ 与其他语句组合 }
+sum := 0;
+i := 1;
+repeat
+  sum += i;
+  i += 1
+until i > 5;
+write sum
