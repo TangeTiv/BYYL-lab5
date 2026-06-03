@@ -1,0 +1,11 @@
+{ test_repeat.tny — REPEAT-UNTIL 循环测试
+  测试 repeat-until：条件成立时退出循环 }
+
+read n;
+sum := 0;
+i := 0;
+repeat
+  sum := sum + n;
+  i := i + 1
+until i = 3;
+write sum

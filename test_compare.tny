@@ -1,0 +1,14 @@
+{ test_compare.tny — 比较运算符测试
+  测试所有比较运算符：<, <=, >, >=, =, <>
+  注意：比较结果必须用于 IF/REPEAT 条件，不能直接赋值 }
+
+read x;
+read y;
+
+{ 使用 if 展示比较结果 }
+if x < y then write 1 else write 0 end;
+if x <= y then write 2 else write 0 end;
+if x > y then write 3 else write 0 end;
+if x >= y then write 4 else write 0 end;
+if x = y then write 5 else write 0 end;
+if x <> y then write 6 else write 0 end

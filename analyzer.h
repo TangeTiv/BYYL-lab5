@@ -23,4 +23,7 @@ void buildSymtab(TreeNode* syntaxTree);
  */
 void typeCheck(TreeNode* syntaxTree);
 
+/* resetAnalyzer : 重置语义分析器内部状态（location 计数器） */
+void resetAnalyzer(void);
+
 #endif

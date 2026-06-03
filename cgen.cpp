@@ -19,6 +19,10 @@
  */
 static int tmpOffset = 0;
 
+/* 四元组生成器状态（文件作用域，以便 resetCodeGen 重置）*/
+static int varOrder = 1;      // 临时变量编号 T1, T2, T3 ...
+static int labelCount = 0;    // 标号编号 L1, L2, L3 ...
+
 /* ================================================================
  * 四元组中间代码输出辅助函数
  * ================================================================ */
@@ -26,11 +30,17 @@ static int tmpOffset = 0;
 /* 空操作数常量（表示缺省的操作数）*/
 static const OperandsNode EMPTY_OP = {Empty, {0}};
 
+/* resetCodeGen : 重置代码生成器状态（用于 GUI 多次编译）*/
+void resetCodeGen(void) {
+    tmpOffset = 0;
+    varOrder = 1;
+    labelCount = 0;
+}
+
 /* newTemp : 生成新的临时变量名 T1, T2, T3 ...
  * 返回值 : 用 copyString 分配的字符串，调用者无需释放
  */
 static const char* newTemp() {
-    static int varOrder = 1;
     std::string s = "T" + std::to_string(varOrder++);
     return copyString(s.c_str());
 }
@@ -39,7 +49,6 @@ static const char* newTemp() {
  * 返回值 : 递增的标号编号
  */
 static int newLabel() {
-    static int labelCount = 0;
     return ++labelCount;
 }
 
@@ -47,7 +56,7 @@ static int newLabel() {
  * 参数 id : 标号 ID
  */
 static void emitLabel(int id) {
-    std::cout << "L" << id << ":" << std::endl;
+    *quad << "L" << id << ":" << std::endl;
 }
 
 /* emitQuad : 输出自定义控制流四元组 (op, x, y, z)
@@ -55,17 +64,17 @@ static void emitLabel(int id) {
  */
 static void emitQuad(const char* op, const OperandsNode& x,
                      const OperandsNode& y, const OperandsNode& z) {
-    std::cout << "(" << op;
-    if (x.kind == IntConst)       std::cout << ", " << x.contents.val;
-    else if (x.kind == String && x.contents.name) std::cout << ", " << x.contents.name;
-    else                          std::cout << ", _";
-    if (y.kind == IntConst)       std::cout << ", " << y.contents.val;
-    else if (y.kind == String && y.contents.name) std::cout << ", " << y.contents.name;
-    else                          std::cout << ", _";
-    if (z.kind == IntConst)       std::cout << ", " << z.contents.val;
-    else if (z.kind == String && z.contents.name) std::cout << ", " << z.contents.name;
-    else                          std::cout << ", _";
-    std::cout << ")" << std::endl;
+    *quad << "(" << op;
+    if (x.kind == IntConst)       *quad << ", " << x.contents.val;
+    else if (x.kind == String && x.contents.name) *quad << ", " << x.contents.name;
+    else                          *quad << ", _";
+    if (y.kind == IntConst)       *quad << ", " << y.contents.val;
+    else if (y.kind == String && y.contents.name) *quad << ", " << y.contents.name;
+    else                          *quad << ", _";
+    if (z.kind == IntConst)       *quad << ", " << z.contents.val;
+    else if (z.kind == String && z.contents.name) *quad << ", " << z.contents.name;
+    else                          *quad << ", _";
+    *quad << ")" << std::endl;
 }
 
 /* ================================================================
@@ -76,54 +85,54 @@ static void emitQuad(const char* op, const OperandsNode& x,
 
 void OutputOperand(const OperandsNode &x)
 {
-    std::cout << " , ";
+    *quad << " , ";
     if (x.kind == IntConst)
-        std::cout << x.contents.val;
+        *quad << x.contents.val;
     else if (x.kind == String && x.contents.name != NULL)
-        std::cout << x.contents.name;
+        *quad << x.contents.name;
     else
-        std::cout << "_";
+        *quad << "_";
 }
 
 void OutputOP(OpKind token)
 {
     switch (token)
     {
-        case mul:    std::cout << "*";  break;
-        case add:    std::cout << "+";  break;
-        case J:      std::cout << "J";  break;
-        case Jne:    std::cout << "J!="; break;
-        case Jl:     std::cout << "J>";  break;
-        case Jr:     std::cout << "J<";  break;
-        case Jle:    std::cout << "J>="; break;
-        case Jre:    std::cout << "J<="; break;
-        case devi:   std::cout << "/";  break;
-        case sub:    std::cout << "-";  break;
-        case modx:   std::cout << "%";  break;
-        case pow:    std::cout << "^";  break;
-        case rd:     std::cout << "rd"; break;
-        case wri:    std::cout << "WR"; break;
-        case eq:     std::cout << "="; break;
-        case asn:    std::cout << ":="; break;
-        case lt_op:  std::cout << "<";  break;
-        case le_op:  std::cout << "<="; break;
-        case gt_op:  std::cout << ">";  break;
-        case ge_op:  std::cout << ">="; break;
-        case ne_op:  std::cout << "!="; break;
-        case inc_op: std::cout << "++"; break;
-        case dec_op: std::cout << "--"; break;
+        case mul:    *quad << "*";  break;
+        case add:    *quad << "+";  break;
+        case J:      *quad << "J";  break;
+        case Jne:    *quad << "J!="; break;
+        case Jl:     *quad << "J>";  break;
+        case Jr:     *quad << "J<";  break;
+        case Jle:    *quad << "J>="; break;
+        case Jre:    *quad << "J<="; break;
+        case devi:   *quad << "/";  break;
+        case sub:    *quad << "-";  break;
+        case modx:   *quad << "%";  break;
+        case pow:    *quad << "^";  break;
+        case rd:     *quad << "rd"; break;
+        case wri:    *quad << "WR"; break;
+        case eq:     *quad << "="; break;
+        case asn:    *quad << ":="; break;
+        case lt_op:  *quad << "<";  break;
+        case le_op:  *quad << "<="; break;
+        case gt_op:  *quad << ">";  break;
+        case ge_op:  *quad << ">="; break;
+        case ne_op:  *quad << "!="; break;
+        case inc_op: *quad << "++"; break;
+        case dec_op: *quad << "--"; break;
         default:     break;
     }
 }
 
 void Gen(OpKind token, OperandsNode x, OperandsNode y, OperandsNode z)
 {
-    std::cout << "(";
+    *quad << "(";
     OutputOP(token);
     OutputOperand(x);
     OutputOperand(y);
     OutputOperand(z);
-    std::cout << " )" << std::endl;
+    *quad << " )" << std::endl;
 }
 
 /* ================================================================
@@ -314,6 +323,135 @@ static OperandsNode genStmt(TreeNode* tree)
             emitRO("OUT", ac, 0, 0, "输出 ac");
 
             Gen(wri, writeVal, EMPTY_OP, EMPTY_OP);
+            break;
+        }
+
+        /* ---- WHILE 语句代码生成 + 四元组 ---- */
+        case WhileK:
+        {
+            if (TraceCode) emitComment("-> while");
+
+            p1 = tree->child[0];  // 循环条件
+            p2 = tree->child[1];  // 循环体
+
+            int loopLabel = newLabel();
+            int exitLabel = newLabel();
+
+            /* 循环起始标号 */
+            emitLabel(loopLabel);
+
+            /* 保存循环起始地址（用于回跳） */
+            savedLoc1 = emitSkip(0);
+            emitComment("while: 循环条件判断开始");
+
+            /* 计算条件表达式 */
+            OperandsNode whileCond = cGen(p1);
+
+            /* 四元组：条件为假 (==0) → 退出循环 */
+            {
+                OperandsNode zeroOp, exitLabelOp;
+                zeroOp.kind = IntConst; zeroOp.contents.val = 0;
+                exitLabelOp.kind = String;
+                exitLabelOp.contents.name = copyString(("L" + std::to_string(exitLabel)).c_str());
+                emitQuad("J=", whileCond, zeroOp, exitLabelOp);
+            }
+
+            /* TM：预留条件跳转指令位置 */
+            savedLoc2 = emitSkip(1);
+            emitComment("while: 条件为假时跳转到出口");
+
+            /* 循环体 */
+            cGen(p2);
+
+            /* 四元组：无条件跳回循环起始 */
+            {
+                OperandsNode loopLabelOp;
+                loopLabelOp.kind = String;
+                loopLabelOp.contents.name = copyString(("L" + std::to_string(loopLabel)).c_str());
+                emitQuad("J", EMPTY_OP, EMPTY_OP, loopLabelOp);
+            }
+
+            /* TM：跳回循环起始 */
+            emitRM_Abs("LDA", pc, savedLoc1, "while: 跳回循环条件判断");
+
+            /* 回填：条件假时跳转到出口 */
+            currentLoc = emitSkip(0);
+            emitBackup(savedLoc2);
+            emitRM_Abs("JEQ", ac, currentLoc, "while: 条件为假，退出循环");
+            emitRestore();
+
+            /* 出口标号 */
+            emitLabel(exitLabel);
+
+            if (TraceCode) emitComment("<- while");
+            break;
+        }
+
+        /* ---- FOR 语句代码生成 + 四元组 ---- */
+        case ForK:
+        {
+            if (TraceCode) emitComment("-> for");
+
+            p1 = tree->child[0];  // 初始化赋值语句
+            p2 = tree->child[1];  // 循环条件
+            p3 = tree->child[2];  // 步进语句（INC/DEC 或赋值）
+
+            int loopLabel = newLabel();
+            int exitLabel = newLabel();
+
+            /* 初始化语句 */
+            cGen(p1);
+
+            /* 循环起始标号 */
+            emitLabel(loopLabel);
+
+            /* 保存循环起始地址（用于回跳） */
+            savedLoc1 = emitSkip(0);
+            emitComment("for: 循环条件判断开始");
+
+            /* 计算条件表达式 */
+            OperandsNode forCond = cGen(p2);
+
+            /* 四元组：条件为假 (==0) → 退出循环 */
+            {
+                OperandsNode zeroOp, exitLabelOp;
+                zeroOp.kind = IntConst; zeroOp.contents.val = 0;
+                exitLabelOp.kind = String;
+                exitLabelOp.contents.name = copyString(("L" + std::to_string(exitLabel)).c_str());
+                emitQuad("J=", forCond, zeroOp, exitLabelOp);
+            }
+
+            /* TM：预留条件跳转指令位置 */
+            savedLoc2 = emitSkip(1);
+            emitComment("for: 条件为假时跳转到出口");
+
+            /* 循环体 */
+            cGen(tree->child[3]);
+
+            /* 步进语句 */
+            cGen(p3);
+
+            /* 四元组：无条件跳回循环起始 */
+            {
+                OperandsNode loopLabelOp;
+                loopLabelOp.kind = String;
+                loopLabelOp.contents.name = copyString(("L" + std::to_string(loopLabel)).c_str());
+                emitQuad("J", EMPTY_OP, EMPTY_OP, loopLabelOp);
+            }
+
+            /* TM：跳回循环起始 */
+            emitRM_Abs("LDA", pc, savedLoc1, "for: 跳回循环条件判断");
+
+            /* 回填：条件假时跳转到出口 */
+            currentLoc = emitSkip(0);
+            emitBackup(savedLoc2);
+            emitRM_Abs("JEQ", ac, currentLoc, "for: 条件为假，退出循环");
+            emitRestore();
+
+            /* 出口标号 */
+            emitLabel(exitLabel);
+
+            if (TraceCode) emitComment("<- for");
             break;
         }
 
@@ -547,7 +685,7 @@ void codeGen(TreeNode* syntaxTree, const char* codefile)
     std::string s = "文件: ";
     s += codefile;
 
-    std::cout << "\n========== 四元组中间代码 ==========" << std::endl;
+    *quad << "\n========== 四元组中间代码 ==========" << std::endl;
 
     emitComment("TINY 编译到 TM 代码");
     emitComment(s.c_str());
@@ -562,7 +700,7 @@ void codeGen(TreeNode* syntaxTree, const char* codefile)
     cGen(syntaxTree);
 
     /* 程序结束 */
-    std::cout << "===================================\n" << std::endl;
+    *quad << "===================================\n" << std::endl;
 
     emitComment("程序执行结束。");
     emitRO("HALT", 0, 0, 0, "");

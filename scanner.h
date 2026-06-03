@@ -21,4 +21,7 @@ extern char tokenString[MAXTOKENLEN + 1];
  */
 TokenType getToken(void);
 
+/* resetScanner : 重置词法分析器状态（用于多次编译） */
+void resetScanner(void);
+
 #endif

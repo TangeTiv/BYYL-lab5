@@ -1,0 +1,17 @@
+{ test_arithmetic.tny — 算术运算测试
+  测试所有算术运算符：+, -, *, /, %, ^ }
+
+read a;
+read b;
+add := a + b;
+sub := a - b;
+mul := a * b;
+div := a / b;
+mod := a % b;
+pow := a ^ b;
+write add;
+write sub;
+write mul;
+write div;
+write mod;
+write pow

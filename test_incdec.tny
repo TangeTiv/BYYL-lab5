@@ -1,0 +1,11 @@
+{ test_incdec.tny — 自增/自减运算符测试
+  测试 ++ 和 -- 运算符 }
+
+read x;
+write x;
+xx := ++x;
+write x;
+write xx;
+y := --x;
+write x;
+write y

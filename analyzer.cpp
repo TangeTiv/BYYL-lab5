@@ -17,6 +17,12 @@
  * ================================================================ */
 static int location = 0;
 
+/* resetAnalyzer : 重置语义分析器状态（用于 GUI 多次编译）*/
+void resetAnalyzer(void)
+{
+    location = 0;
+}
+
 /* ================================================================
  * traverse : 通用的递归语法树遍历函数
  *
@@ -185,18 +191,29 @@ static void checkNode(TreeNode* t)
             {
                 case OpK:
                     /* 运算符节点：检查操作数类型 */
-                    if (t->child[0]->type != Integer ||
-                        t->child[1]->type != Integer)
+                    if (t->attr.op == INC || t->attr.op == DEC)
                     {
-                        typeError(t, "运算符应用于非整数操作数");
+                        /* 单目运算符 ++ / --：只需检查 child[0] */
+                        if (t->child[0]->type != Integer)
+                            typeError(t, "自增/自减应用于非整数操作数");
+                        t->type = Integer;
                     }
-                    /* 确定运算结果类型 */
-                    if (t->attr.op == EQ || t->attr.op == LT ||
-                        t->attr.op == LE || t->attr.op == GT ||
-                        t->attr.op == GE || t->attr.op == NEQ)
-                        t->type = Boolean;   // 比较运算结果为布尔型
                     else
-                        t->type = Integer;   // 算术运算结果为整数型
+                    {
+                        /* 双目运算符：检查两个操作数 */
+                        if (t->child[0]->type != Integer ||
+                            (t->child[1] && t->child[1]->type != Integer))
+                        {
+                            typeError(t, "运算符应用于非整数操作数");
+                        }
+                        /* 确定运算结果类型 */
+                        if (t->attr.op == EQ || t->attr.op == LT ||
+                            t->attr.op == LE || t->attr.op == GT ||
+                            t->attr.op == GE || t->attr.op == NEQ)
+                            t->type = Boolean;   // 比较运算结果为布尔型
+                        else
+                            t->type = Integer;   // 算术运算结果为整数型
+                    }
                     break;
 
                 case ConstK:
@@ -237,6 +254,18 @@ static void checkNode(TreeNode* t)
                     /* REPEAT 循环：条件表达式不能是整数（必须是布尔值）*/
                     if (t->child[1]->type == Integer)
                         typeError(t->child[1], "REPEAT 条件不是布尔类型");
+                    break;
+
+                case WhileK:
+                    /* WHILE 循环：条件表达式不能是整数（必须是布尔值）*/
+                    if (t->child[0]->type == Integer)
+                        typeError(t->child[0], "WHILE 条件不是布尔类型");
+                    break;
+
+                case ForK:
+                    /* FOR 循环：条件表达式不能是整数（必须是布尔值）*/
+                    if (t->child[1] && t->child[1]->type == Integer)
+                        typeError(t->child[1], "FOR 条件不是布尔类型");
                     break;
 
                 default:

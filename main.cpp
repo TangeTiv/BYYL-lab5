@@ -37,21 +37,8 @@
 
 /* ================================================================
  * 全局变量定义
- * 这些变量在 globals.h 中声明为 extern，在此处实际分配内存
+ * 这些变量在 globals.h 中声明为 extern，在 globals.cpp 中定义
  * ================================================================ */
-int lineno = 0;                  // 当前行号，从 0 开始
-std::ifstream* source = nullptr; // 源代码输入文件流
-std::ostream*  listing = nullptr;// 列表输出流（通常指向 std::cout）
-std::ofstream* code = nullptr;   // TM 代码输出文件流
-
-/* 跟踪调试标志（默认全部关闭） */
-int EchoSource   = FALSE;   // 是否回显源代码
-int TraceScan    = FALSE;   // 是否跟踪词法分析过程
-int TraceParse   = FALSE;   // 是否打印语法树
-int TraceAnalyze = FALSE;   // 是否跟踪语义分析过程
-int TraceCode    = FALSE;   // 是否在代码中写入注释
-
-int Error = FALSE;          // 错误标志，发生错误时阻止后续阶段
 
 /* ================================================================
  * main — 编译器主函数
@@ -84,12 +71,14 @@ int main(int argc, char* argv[])
         strcat(pgm, ".tny");
 
     /* ---- 打开源代码文件 ---- */
-    source = new std::ifstream(pgm);
-    if (!source->is_open())
+    std::ifstream* srcFile = new std::ifstream(pgm);
+    if (!srcFile->is_open())
     {
         std::cerr << "文件 " << pgm << " 未找到!" << std::endl;
+        delete srcFile;
         exit(1);
     }
+    source = srcFile;
 
     /* ---- 设置列表输出到屏幕 ---- */
     listing = &std::cout;
@@ -135,17 +124,21 @@ int main(int argc, char* argv[])
         strncpy(codefile, pgm, fnlen);
         strcat(codefile, ".tm");
 
-        code = new std::ofstream(codefile);
-        if (!code->is_open())
+        std::ofstream* tmFile = new std::ofstream(codefile);
+        if (!tmFile->is_open())
         {
             std::cout << "无法打开文件 " << codefile << std::endl;
+            delete tmFile;
+            free(codefile);
             exit(1);
         }
+        code = tmFile;
 
         codeGen(syntaxTree, codefile);
 
-        code->close();
-        delete code;
+        tmFile->close();
+        delete tmFile;
+        code = nullptr;
         free(codefile);
     }
 #endif
@@ -153,8 +146,8 @@ int main(int argc, char* argv[])
 #endif
 
     /* ---- 清理资源 ---- */
-    source->close();
-    delete source;
+    srcFile->close();
+    delete srcFile;
 
     return 0;
 }

@@ -12,6 +12,7 @@
 
 #include <iostream>   // C++ 标准输入输出流
 #include <fstream>    // C++ 文件输入输出流
+#include <sstream>    // C++ 字符串流（GUI模式使用）
 #include <string>     // C++ 字符串类
 #include <cstdlib>    // C 标准库（malloc, free, atoi 等）
 #include <cctype>     // 字符处理函数（isdigit, isalpha 等）
@@ -48,10 +49,12 @@ typedef enum
  * source  : 源代码文件（输入）
  * listing : 列表输出文件（屏幕或文件）
  * code    : TM 模拟器代码文件（输出）
+ * quad    : 四元组中间代码输出流（默认为 std::cout）
  * ================================================================ */
-extern std::ifstream* source;   // 源代码文本文件
+extern std::istream*  source;   // 源代码输入流（CLI为ifstream，GUI为istringstream）
 extern std::ostream*  listing;  // 列表输出文本文件（通常为 stdout）
-extern std::ofstream* code;     // TM 模拟器代码文本文件
+extern std::ostream*  code;     // TM 模拟器代码输出流（CLI为ofstream，GUI为ostringstream）
+extern std::ostream*  quad;     // 四元组中间代码输出流（默认指向 std::cout）
 
 extern int lineno;              // 源代码当前行号（用于列表输出）
 
@@ -141,5 +144,11 @@ extern int TraceCode;
 
 /* Error : 若为 TRUE，表示发生了错误，阻止后续处理阶段继续执行 */
 extern int Error;
+
+/* ================================================================
+ * resetCompilerState : 重置所有编译器状态（用于 GUI 多次编译）
+ * 调用各模块的 reset 函数，清除上一次编译的状态
+ * ================================================================ */
+void resetCompilerState(void);
 
 #endif

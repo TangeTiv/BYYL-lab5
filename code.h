@@ -81,4 +81,7 @@ void emitRestore(void);
  */
 void emitRM_Abs(const char* op, int r, int a, const char* c);
 
+/* resetCodeState : 重置代码发射器状态（emitLoc, highEmitLoc） */
+void resetCodeState(void);
+
 #endif

@@ -15,4 +15,7 @@
  */
 TreeNode* parse(void);
 
+/* resetParser : 重置语法分析器内部状态（token 变量） */
+void resetParser(void);
+
 #endif

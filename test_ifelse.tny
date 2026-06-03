@@ -1,0 +1,17 @@
+{ test_ifelse.tny — IF 语句测试
+  测试 if-then、if-then-else、嵌套 if }
+
+read score;
+if score >= 90 then
+  write 5
+else
+  if score >= 80 then
+    write 4
+  else
+    if score >= 60 then
+      write 3
+    else
+      write 0
+    end
+  end
+end

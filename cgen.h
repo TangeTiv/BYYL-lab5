@@ -20,4 +20,7 @@
  */
 void codeGen(TreeNode* syntaxTree, const char* codefile);
 
+/* resetCodeGen : 重置代码生成器内部状态（临时变量编号、标号编号、tmpOffset）*/
+void resetCodeGen(void);
+
 #endif

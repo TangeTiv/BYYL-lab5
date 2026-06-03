@@ -73,6 +73,33 @@ typedef struct BucketListRec
 /* hashTable : 哈希表（桶数组），使用静态全局变量 */
 static BucketList hashTable[SIZE];
 
+/* st_clear : 清空符号表，释放所有节点（用于 GUI 多次编译）*/
+void st_clear(void)
+{
+    for (int i = 0; i < SIZE; i++)
+    {
+        BucketList l = hashTable[i];
+        while (l != NULL)
+        {
+            BucketList nextBucket = l->next;
+
+            /* 释放行号链表 */
+            LineList line = l->lines;
+            while (line != NULL)
+            {
+                LineList nextLine = line->next;
+                delete line;
+                line = nextLine;
+            }
+
+            delete[] l->name;  // 释放变量名字符串
+            delete l;          // 释放桶节点
+            l = nextBucket;
+        }
+        hashTable[i] = NULL;
+    }
+}
+
 /* ================================================================
  * st_insert : 将变量插入符号表
  *

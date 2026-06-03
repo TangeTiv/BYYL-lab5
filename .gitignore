@@ -1,0 +1,26 @@
+# 编译产物
+*.o
+*.exe
+*.out
+*.obj
+
+# TM 模拟器生成文件
+*.tm
+
+# Git
+.gitignore
+
+# 编译器可执行文件
+tinyc
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# Qt GUI 构建产物
+gui/Makefile
+gui/Makefile.*
+gui/release/
+gui/debug/
+gui/moc_*.cpp
+gui/.qmake.stash

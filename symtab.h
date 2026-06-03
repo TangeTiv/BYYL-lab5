@@ -29,4 +29,7 @@ int st_lookup(const char* name);
  */
 void printSymTab(std::ostream& listing);
 
+/* st_clear : 清空符号表，释放所有动态分配的节点 */
+void st_clear(void);
+
 #endif
